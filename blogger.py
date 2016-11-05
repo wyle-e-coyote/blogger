@@ -1,8 +1,10 @@
 # all the imports
 import os
 import sqlite3
-from flask import Flask, request, session, g, redirect, url_for, abort, \
-    render_template, flash
+
+from flask import (Flask, abort, flash, g, jsonify, redirect, render_template,
+                   request, session, url_for)
+
 
 app = Flask(__name__)
 app.config.from_object(__name__)
@@ -51,8 +53,12 @@ def close_db(error):
 def show_entries():
     db = get_db()
     cur = db.execute('select title, text from entries order by id desc')
-    entries = cur.fetchall()
-    return render_template('show_entries.html', entries=entries)
+    entries = []
+    for index, entry in enumerate(cur.fetchall()):
+        print index
+        entries.append({'id': index, 'title': entry['title'], 'text': entry['text']})
+    return jsonify(entries)
+    #return render_template('show_entries.html', entries=entries)
 
 @app.route('/add', methods=['POST'])
 def add_entry():
@@ -85,4 +91,3 @@ def logout():
     session.pop('logged_in', None)
     flash('You were logged out')
     return redirect(url_for('show_entries'))
-
