@@ -1,10 +1,8 @@
-# all the imports
 import os
 import sqlite3
 
 from flask import (Flask, abort, flash, g, jsonify, redirect, render_template,
                    request, session, url_for)
-
 
 app = Flask(__name__)
 app.config.from_object(__name__)
@@ -52,18 +50,19 @@ def close_db(error):
 @app.route('/')
 def show_entries():
     db = get_db()
-    cur = db.execute('select title, text, author, created from entries order by id desc')
+    cur = db.execute('SELECT * FROM entry JOIN author ON entry.author_id=author.author_id ORDER BY entry_id DESC');
     entries = []
     for index, entry in enumerate(cur.fetchall()):
         # print index
         # print entry
         entries.append(
             {
-                'id': index, 
-                'title': entry['title'], 
-                'text': entry['text'], 
+                'id': entry['entry_id'],
+                'title': entry['title'],
+                'text': entry['text'],
                 'created': entry['created'],
-                'author': entry['author']
+                'author': entry['name'],
+                'email': entry['email']
             })
     return jsonify(entries)
     #return render_template('show_entries.html', entries=entries)
@@ -74,7 +73,7 @@ def add_entry():
         abort(401)
     db = get_db()
     """ WARNING: db exploit by not scrubbing input!!! """
-    db.execute('insert into entries (title, text) values (?, ?)',
+    db.execute('insert into entries (title, text, created, author) values (?, ?, ?, ?)',
         [request.form['title'], request.form['text']])
     db.commit()
     flash('New entry was successfully posted')
