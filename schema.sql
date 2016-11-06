@@ -1,7 +1,9 @@
 drop table if exists entries;
 create table entries (
-    id integer primary key autoincrement,
-    title text not null,
-    'text' text not null
+    id INTEGER primary key autoincrement,
+    title TEXT not null,
+    text TEXT not null,
+    author TEXT not null,
+    created TEXT not null
 );
 

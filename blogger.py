@@ -52,11 +52,19 @@ def close_db(error):
 @app.route('/')
 def show_entries():
     db = get_db()
-    cur = db.execute('select title, text from entries order by id desc')
+    cur = db.execute('select title, text, author, created from entries order by id desc')
     entries = []
     for index, entry in enumerate(cur.fetchall()):
-        print index
-        entries.append({'id': index, 'title': entry['title'], 'text': entry['text']})
+        # print index
+        # print entry
+        entries.append(
+            {
+                'id': index, 
+                'title': entry['title'], 
+                'text': entry['text'], 
+                'created': entry['created'],
+                'author': entry['author']
+            })
     return jsonify(entries)
     #return render_template('show_entries.html', entries=entries)
 
