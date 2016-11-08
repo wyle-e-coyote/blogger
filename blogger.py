@@ -3,6 +3,7 @@ import sqlite3
 
 from flask import (Flask, abort, flash, g, jsonify, redirect, render_template,
                    request, session, url_for)
+from datetime import datetime
 
 app = Flask(__name__)
 app.config.from_object(__name__)
@@ -47,6 +48,14 @@ def close_db(error):
     if hasattr(g, 'sqlite_db'):
         g.sqlite_db.close()
 
+@app.route('/edit_blog')
+def edit_blog():
+    db = get_db()
+    cur = db.execute('SELECT * FROM entry')
+    entries = cur.fetchall()
+    return render_template('show_entries.html', entries=entries)
+
+
 @app.route('/')
 def show_entries():
     db = get_db()
@@ -72,12 +81,16 @@ def add_entry():
     if not session.get('logged_in'):
         abort(401)
     db = get_db()
+    fmt = "%Y-%m-%d %I:%M"
+    now = datetime.now()
+    print now
+    print now.strftime("YYYY-MM-DD HH:MM")
     """ WARNING: db exploit by not scrubbing input!!! """
-    db.execute('insert into entries (title, text, created, author) values (?, ?, ?, ?)',
-        [request.form['title'], request.form['text']])
+    db.execute('insert into entry (title, text, created, author_id) values (?, ?, ?, ?)',
+        [request.form['title'], request.form['text'], now, 1])
     db.commit()
     flash('New entry was successfully posted')
-    return redirect(url_for('show_entries'))
+    return redirect(url_for('edit_blog'))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -90,7 +103,7 @@ def login():
         else:
             session['logged_in'] = True
             flash('You were logged in')
-            return redirect(url_for('show_entries'))
+            return redirect(url_for('edit_blog'))
     return render_template('login.html', error=error)
 
 @app.route('/logout')
